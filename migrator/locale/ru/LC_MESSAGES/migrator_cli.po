@@ -1,0 +1,137 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+
+#: cli.py:42 cli.py:190
+msgid "Revision {} not found."
+msgstr "Ревизия {} не найдена."
+
+#: cli.py:44 cli.py:192
+msgid "Revision {} has too much matches ({})."
+msgstr "Ревизия {} неоднозначна ({}). Уточните запрос."
+
+#: cli.py:89
+msgid "Config already exists. Overwrite?"
+msgstr "Конфиг уже существует. Перезаписать?"
+
+#: cli.py:94
+msgid "Database type"
+msgstr "Выберите тип базы данных"
+
+#: cli.py:100
+msgid "Database"
+msgstr "База данных"
+
+#: cli.py:106
+msgid "User"
+msgstr "Пользователь"
+
+#: cli.py:107
+msgid "Password"
+msgstr "Пароль"
+
+#: cli.py:108
+msgid "Host"
+msgstr "Хост"
+
+#: cli.py:110
+msgid "Port"
+msgstr "Порт"
+
+#: cli.py:118
+msgid "Migrations directory"
+msgstr "Путь до директории миграций"
+
+#: cli.py:125
+msgid "Project directory (For PYTHON_PATH)"
+msgstr "Директория с проектом (Для PYTHON_PATH)"
+
+#: cli.py:132
+msgid "Models path (Comma separated)"
+msgstr "Пути импорта моделей (Разделять запятой)"
+
+#: cli.py:137
+msgid "Excluded models by name (Comma separated)"
+msgstr "Названия исключенных из миграций базовых моделей (Разделять запятой)"
+
+#: cli.py:156
+msgid "Edit config?"
+msgstr "Хотите отредактировать итоговый конфиг?"
+
+#: cli.py:162
+msgid "Config successfully saved!"
+msgstr "Конфиг успешно сохранен!"
+
+#: cli.py:173
+msgid "--rev param required"
+msgstr "Необходимо указать ревизию через --rev (Поможет migrations_list)."
+
+#: cli.py:174
+msgid "Migration title"
+msgstr "Название миграции"
+
+#: cli.py:184
+msgid "There are no latest migration."
+msgstr "Ещё не было создано ни одной миграции. Миграция от последней невозможна."
+
+#: cli.py:205
+msgid "Migration already applied. Repeat?"
+msgstr "Миграция уже применена. Повторить?"
+
+#: cli.py:206
+msgid "Abort"
+msgstr "Отмена"
+
+#: cli.py:209 cli.py:266
+msgid "Migration dependencies not applied: {}"
+msgstr "Зависимости миграции не применены: {}"
+
+#: cli.py:211 cli.py:268
+msgid "Migration {} applied successfully!"
+msgstr "Миграция {} успешно применена"
+
+#: cli.py:220
+msgid "Applied"
+msgstr "Применена"
+
+#: cli.py:220
+msgid "Dependencies"
+msgstr "Зависимости"
+
+#: cli.py:220
+msgid "Migration"
+msgstr "Миграция"
+
+#: cli.py:220
+msgid "Required"
+msgstr "Обязательна"
+
+#: cli.py:220
+msgid "Time"
+msgstr "Время"
+
+#: cli.py:220
+msgid "Title"
+msgstr "Название"
+
+#: cli.py:227 cli.py:228 cli.py:229
+msgid "No"
+msgstr "Нет"
+
+#: cli.py:228 cli.py:229
+msgid "Yes"
+msgstr "Да"
+
+#: cli.py:248
+msgid "Revision {} marked as required"
+msgstr "Ревизия {} отмечена как обязательная"
+
+#: cli.py:257
+msgid "There are no required migrations (Empty required.json)"
+msgstr "Нет ни одной обязательной миграции (Пустой required.json)"
+
+#: cli.py:261
+msgid "Project already up to date"
+msgstr "Все обязательные миграции уже применены"
+

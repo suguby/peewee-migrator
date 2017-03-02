@@ -1,0 +1,5 @@
+[postgres]
+db_url = postgres://migrator_test_user:1234@localhost:5432/migrator_test_db
+
+[mysql]
+db_url = mysql://migrator_test_user:1234@localhost:3306/migrator_test_db
