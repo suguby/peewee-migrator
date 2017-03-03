@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from tests.utils import TestCliBase
+from tests.utils import TestCliBase, PostrgesTestMixin, MysqlTestMixin
 
 
 class CreateTableTest(TestCliBase):
@@ -20,3 +20,10 @@ class CreateTableTest(TestCliBase):
         TestDbTable._meta.database = self.db
         self.assertEqual(TestDbTable.table_exists(), True)
 
+
+class CreateTablePostrgesTest(PostrgesTestMixin, CreateTableTest):
+    pass
+
+
+class CreateTableMysqlTest(MysqlTestMixin, CreateTableTest):
+    pass

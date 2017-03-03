@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from tests.utils import TestCliBase
+from tests.utils import TestCliBase, PostrgesTestMixin, MysqlTestMixin
 
 
 class AddFieldsTest(TestCliBase):
@@ -25,3 +25,10 @@ class AddFieldsTest(TestCliBase):
         SourceTable._meta.database = self.db
         self.assertEqual(SourceTable.table_exists(), True)
 
+
+class AddFieldsPostrgesTest(PostrgesTestMixin, AddFieldsTest):
+    pass
+
+
+class AddFieldsMysqlTest(MysqlTestMixin, AddFieldsTest):
+    pass
