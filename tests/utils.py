@@ -5,11 +5,15 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from configparser import ConfigParser as SafeConfigParser
 
 from playhouse.db_url import connect
 
 from migrator.config import Config
+
+if sys.version_info > (3,):
+    from configparser import ConfigParser as SafeConfigParser
+else:
+    from ConfigParser import SafeConfigParser
 
 
 class TestCliBase(unittest.TestCase):
