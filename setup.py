@@ -11,13 +11,13 @@ with codecs.open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='peewee-migrator',
-    version='0.0.1.dev2',
+    version='0.0.1.dev3',
     description='Basic migrations support for peewee ORM',
     author='Suguby',
     author_email='suguby@gmail.com',
     license='MIT',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',

@@ -3,6 +3,27 @@ Migrator
 
 Base migrations support for peewee ORM
 
+Installation
+--------------------
+
+pip install peewee-migrator
+
+
+Create config file
+--------------------
+
+Run migrator create_config, follow instructions.
+
+An example of the your_app.cfg::
+
+    [migrator]
+    db_url = postgres://peewee:123@127.0.0.1:5432/peewee
+    migrations_dir = /path/to/your/project/migrations
+    project_dir = /path/to/your/project
+    db_type = postgres
+    models_path = app.models
+    excluded_models =
+
 Migration management
 --------------------
 

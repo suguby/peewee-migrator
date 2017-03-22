@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from tests.utils import TestCliBase, PostrgesTestMixin, MysqlTestMixin
+from tests.utils import TestCliBase
 
 
 class CreateTableTest(TestCliBase):
@@ -9,6 +9,7 @@ class CreateTableTest(TestCliBase):
 
     def test_create_table(self):
         if not self.database_config_exists:
+            # skip test, if no config
             self.skipTest('No {} config'.format(self.DB_TYPE))
             return
         process = self._popen_cli('make', '--name', 'test_empty')
@@ -20,10 +21,3 @@ class CreateTableTest(TestCliBase):
         TestDbTable._meta.database = self.db
         self.assertEqual(TestDbTable.table_exists(), True)
 
-
-class CreateTablePostrgesTest(PostrgesTestMixin, CreateTableTest):
-    pass
-
-
-class CreateTableMysqlTest(MysqlTestMixin, CreateTableTest):
-    pass

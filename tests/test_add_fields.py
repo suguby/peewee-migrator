@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-from tests.utils import TestCliBase, PostrgesTestMixin, MysqlTestMixin
+from tests.utils import TestCliBase
 
 
 class AddFieldsTest(TestCliBase):
@@ -9,6 +9,7 @@ class AddFieldsTest(TestCliBase):
 
     def test_add_fields(self):
         if not self.database_config_exists:
+            # skip test, if no config
             self.skipTest('No {} config'.format(self.DB_TYPE))
             return
         from tests.apps.add_fields.source_models import SourceTable
@@ -25,10 +26,3 @@ class AddFieldsTest(TestCliBase):
         SourceTable._meta.database = self.db
         self.assertEqual(SourceTable.table_exists(), True)
 
-
-class AddFieldsPostrgesTest(PostrgesTestMixin, AddFieldsTest):
-    pass
-
-
-class AddFieldsMysqlTest(MysqlTestMixin, AddFieldsTest):
-    pass
