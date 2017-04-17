@@ -167,8 +167,14 @@ def down(db, migrator):
         # Удаление таблиц
         if migration['drop']:
             builder.write_line('').write_line('# Tables deletion')
-            for model in migration['drop']:
-                builder.write_line('{model}.drop_table()'.format(model=model))
+            for num, db_table in enumerate(migration['drop'], 1):
+                if num > 1:
+                    builder.write_line('')
+                builder.write_line('class ToDrop{num}(BaseModel):'.format(num=num)).tab()
+                builder.write_line('class Meta:').tab()
+                builder.write_line('db_table = {table}'.format(table=db_table.__repr__())).un_tab().un_tab()
+                builder.write_line('')
+                builder.write_line('ToDrop{num}.drop_table()'.format(num=num))
 
         # Переименование таблиц
         pass

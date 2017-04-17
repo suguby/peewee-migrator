@@ -58,13 +58,14 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         # База данных, на которой будут проводиться проверки
+        if hasattr(self, 'db'):
+            self.db.close()
         db_path = os.path.join(self.dirpath, self.TEST_DB_NAME)
-        if os.path.exists(db_path):
-            if hasattr(self, 'db'):
-                self.db.close()
-            os.remove(db_path)
         self.db = peewee.SqliteDatabase(db_path)
         self.db.connect()
+        for table in self.db.get_tables():
+            self.db.execute_sql('DROP TABLE {}'.format(table))
+        self.db.commit()
 
     @property
     def project_dir(self):

@@ -196,9 +196,10 @@ def make_migration(ctx, migration_type, rev, name):
 
 @cli.command('apply')
 @click.option('--force', default=False, is_flag=True)
+@click.option('--fake', default=False, is_flag=True)
 @click.argument('rev')
 @click.pass_context
-def apply_migration(ctx, force, rev):
+def apply_migration(ctx, force, fake, rev):
     migrator = Executor(ctx.obj['cfg'])
     revision = get_one_revision(migrator, rev)
     if migrator.check_status(revision['hash']) == migrator.STATUS_APPLIED:
@@ -207,7 +208,7 @@ def apply_migration(ctx, force, rev):
     if not migrator.check_dependencies(revision):
         not_applied = [x for x in revision['dependencies'] if migrator.check_status(x) != migrator.STATUS_APPLIED]
         halt(_(u'Migration dependencies not applied: {}').format(u','.join(not_applied)))
-    migrator.apply(revision)
+    migrator.apply(revision, fake=fake)
     click.echo(_(u'Migration {} applied successfully!').format(revision['hash']))
 
 
@@ -249,8 +250,9 @@ def mark_required(ctx, after, rev):
 
 
 @cli.command('up')
+@click.option('--fake', default=False, is_flag=True)
 @click.pass_context
-def up_required(ctx):
+def up_required(ctx, fake):
     migrator = Executor(ctx.obj['cfg'])
     required = migrator.get_required()
     if not required:
@@ -264,7 +266,7 @@ def up_required(ctx):
         if not migrator.check_dependencies(revision):
             not_applied = [x for x in revision['dependencies'] if migrator.check_status(x) != migrator.STATUS_APPLIED]
             halt(_(u'Migration dependencies not applied: {}').format(u','.join(not_applied)))
-        migrator.apply(revision)
+        migrator.apply(revision, fake=fake)
         click.echo(_(u'Migration {} applied successfully!').format(revision['hash']))
 
 

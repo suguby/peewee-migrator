@@ -87,9 +87,10 @@ class Executor(object):
             'required': self.check_required_position(revision)
         }
 
-    def apply(self, migration):
-        module = self.import_migration(migration)
-        module.up(self.get_db_obj(), self.get_migrator())
+    def apply(self, migration, fake=False):
+        if not fake:
+            module = self.import_migration(migration)
+            module.up(self.get_db_obj(), self.get_migrator())
         self.make_applied(migration['hash'])
 
     def get_applied(self):
