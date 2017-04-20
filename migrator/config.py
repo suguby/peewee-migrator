@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
 import codecs
 
-import sys
-
-
-if sys.version_info > (3,):
-    from configparser import ConfigParser as SafeConfigParser
-    from io import StringIO
-else:
-    from ConfigParser import SafeConfigParser
-    from StringIO import StringIO
-
+import six
 from playhouse.db_url import connect
+from six.moves import configparser
 
 __all__ = ['Config']
 
@@ -28,7 +20,7 @@ class Config(dict):
     MIGRATOR_EXCLUDED_MODELS = 'excluded_models'
 
     def __init__(self, *args, **kwargs):
-        self.cp = SafeConfigParser()
+        self.cp = configparser.ConfigParser()
         super(Config, self).__init__(*args, **kwargs)
 
     def make_default(self):
@@ -46,7 +38,7 @@ class Config(dict):
         self.save_to_cp()
 
     def load(self, file_path):
-        self.cp = SafeConfigParser()
+        self.cp = configparser.ConfigParser()
         self.cp.read(file_path)
         self.load_from_cp()
 
@@ -61,13 +53,13 @@ class Config(dict):
         self.cp.write(codecs.open(file_path, 'w', 'utf-8'))
 
     def to_string_io(self):
-        string = StringIO()
+        string = six.StringIO()
         self.save_to_cp()
         self.cp.write(string)
         return string
 
     def save_to_cp(self):
-        self.cp = SafeConfigParser()
+        self.cp = configparser.ConfigParser()
         for section, variables in self.items():
             self.cp.add_section(section)
             for name, value in variables.items():
