@@ -69,20 +69,20 @@ def cli(ctx, config):
 @click.option('--host', 'db_host_arg', default=None)
 @click.option('--port', 'db_port_arg', default=None)
 @click.option('--dir', 'migrations_dir_arg', default=None)
-@click.option('--project', 'project_dir_arg', default=None)
+@click.option('--sys_path', 'sys_path_arg', default=None)
 @click.option('--models', 'models_path_arg', default=None)
 @click.option('--excluded', 'models_excluded_arg', default=None)
 @click.option('--force', default=False, is_flag=True)
 @click.pass_context
 def create_config(
         ctx, db_type_arg, db_name_arg, db_user_arg, db_password_arg, db_host_arg, db_port_arg,
-        migrations_dir_arg, project_dir_arg, models_path_arg, models_excluded_arg, force
+        migrations_dir_arg, sys_path_arg, models_path_arg, models_excluded_arg, force
 ):
     config_path = ctx.obj['config_path'] or 'migrator.cfg'
     ask_edit = all(
         x is None for x in (
             db_type_arg, db_name_arg, db_user_arg, db_password_arg, db_host_arg, db_port_arg,
-            migrations_dir_arg, project_dir_arg, models_path_arg, models_excluded_arg
+            migrations_dir_arg, sys_path_arg, models_path_arg, models_excluded_arg
         )
     )
     if os.path.exists(config_path):
@@ -120,12 +120,12 @@ def create_config(
             )
         ) if migrations_dir_arg is None else migrations_dir_arg
     )
-    project_dir = (
+    sys_path = (
         click.prompt(
-            _(u'Project directory (For PYTHON_PATH)'), default=default_path, type=click.Path(
+            _(u'PYTHON_PATH for project (Use : as delimiter)'), default=default_path, type=click.Path(
                 exists=True, file_okay=False, writable=False, readable=True
             )
-        ) if project_dir_arg is None else project_dir_arg
+        ) if sys_path_arg is None else sys_path_arg
     )
 
     models_path = (
@@ -144,7 +144,7 @@ def create_config(
         cfg.BASE_SECTION: {
             cfg.MIGRATOR_DB_URL: db_url,
             cfg.MIGRATOR_DB_TYPE: db_type,
-            cfg.MIGRATOR_PROJECT_DIR: project_dir,
+            cfg.MIGRATOR_SYS_PATH: sys_path,
             cfg.MIGRATOR_MIGRATIONS_DIR: migrations_dir,
             cfg.MIGRATOR_MODELS_PATH: models_path,
             cfg.MIGRATOR_EXCLUDED_MODELS: excluded_models

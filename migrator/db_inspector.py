@@ -2,6 +2,9 @@
 
 from __future__ import unicode_literals
 
+import inspect
+
+import six
 import sys
 from inspect import getmodule, ismethod, isclass
 
@@ -37,7 +40,8 @@ class Inspector(object):
 
     def get_models(self):
         for path in self.models_path:
-            models = reload(__import__(path, fromlist=['*']))
+            module = __import__(path, fromlist=['*'])
+            models = reload(module)
             for model in dir(models):
                 if model[0].isupper() and model[0] != '_':
                     obj = getattr(models, model)
@@ -63,6 +67,24 @@ class Inspector(object):
         fields = list(self.collect_fields(model_obj._meta.sorted_fields, model=model))
         return model, model_obj._meta.db_table, fields
 
+    def get_field_default(self, value):
+        primitive_types = tuple(set(
+            six.integer_types + six.string_types + (six.binary_type,) + (six.text_type,) + (bool,)
+        ))
+        if isinstance(value, primitive_types):
+            # Простой тип, записывается inline
+            return {'value': value}
+
+        if not callable(value):
+            # Возможно какой-то мутабельный тип, типа list или dict, такой автоматически не добавляем
+            return None
+        _module = inspect.getmodule(value)
+        if _module is not None:
+            # Обычные функции
+            return {'value': '{}.{}'.format(_module, value.__name__), 'import': _module}
+        # TODO: Надо научиться как-то отлавливать такие builtins, как datetime.datetime.now, у которых module None
+        return None
+
     def collect_fields(self, sorted_fields, model=''):
         for field in sorted_fields:
             name = field.name
@@ -72,10 +94,13 @@ class Inspector(object):
                 field_module = field_module.__name__
                 field_path = '{}.{}'.format(field_module, field_path)
 
+            default_value = self.get_field_default(field.default)
             field_params = {
                 'index': field.index, 'unique': field.unique, 'null': field.null,
                 'initial_kwargs': {}
             }
+            if default_value is not None:
+                field_params['default'] = default_value
 
             for param in dir(field):
                 if param[0] == '_' or param in field_params or param in self.EXCLUDED_FIELDS:

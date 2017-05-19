@@ -12,7 +12,7 @@ class Config(dict):
     BASE_SECTION = 'migrator'
     MIGRATOR_DB_URL = 'db_url'
     MIGRATOR_DB_TYPE = 'db_type'
-    MIGRATOR_PROJECT_DIR = 'project_dir'
+    MIGRATOR_SYS_PATH = 'sys_path'
     MIGRATOR_MIGRATIONS_DIR = 'migrations_dir'
 
     # Список через запятую
@@ -29,7 +29,7 @@ class Config(dict):
             self.BASE_SECTION: {
                 self.MIGRATOR_DB_URL: 'sqlite:///sqlite.db',
                 self.MIGRATOR_DB_TYPE: 'sqlite',
-                self.MIGRATOR_PROJECT_DIR: 'project',
+                self.MIGRATOR_SYS_PATH: 'project',
                 self.MIGRATOR_MIGRATIONS_DIR: 'migrations',
                 self.MIGRATOR_MODELS_PATH: 'app.models',
                 self.MIGRATOR_EXCLUDED_MODELS: ''

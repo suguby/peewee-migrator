@@ -11,7 +11,7 @@ with codecs.open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='peewee-migrator',
-    version='0.0.2.dev1',
+    version='0.1.1',
     description='Basic migrations support for peewee ORM',
     author='Suguby',
     author_email='suguby@gmail.com',
@@ -25,7 +25,8 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     url='https://github.com/suguby/peewee-migrator',
     keywords='peewee migrations orm',

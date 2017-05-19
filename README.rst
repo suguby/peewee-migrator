@@ -19,7 +19,7 @@ An example of the your_app.cfg::
     [migrator]
     db_url = postgres://peewee:123@127.0.0.1:5432/peewee
     migrations_dir = /path/to/your/project/migrations
-    project_dir = /path/to/your/project
+    sys_path = /path/to/your/project:/path/to/external/library
     db_type = postgres
     models_path = app.models
     excluded_models =

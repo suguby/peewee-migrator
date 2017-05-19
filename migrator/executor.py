@@ -20,8 +20,9 @@ __all__ = ['Executor']
 
 
 def extend_path(path, index=0):
-    if path not in sys.path:
-        sys.path.insert(index, path)
+    for p in reversed(path.split(':')):
+        if p not in sys.path:
+            sys.path.insert(index, p)
 
 
 class Executor(object):
@@ -38,7 +39,7 @@ class Executor(object):
     def __init__(self, config):
         self.config = config
         # Необходимо для корректной работы
-        extend_path(config.get_setting(config.MIGRATOR_PROJECT_DIR), 1)
+        extend_path(config.get_setting(config.MIGRATOR_SYS_PATH), 1)
         self.migrations_in_path = False
 
     def _extend_migrations(self):

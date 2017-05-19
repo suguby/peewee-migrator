@@ -89,6 +89,14 @@ def down(db, migrator):
                     params.append('unique=True')
                 if field['params']['null']:
                     params.append('null=True')
+                if field['params'].get('default'):
+                    field_default = field['params']['default']
+                    need_import = field_default.get('import') is not None
+                    params.append('default={}'.format(
+                        field_default['value'] if need_import else field_default['value'].__repr__()
+                    ))
+                    if need_import:
+                        to_import.add(field_default['import'])
                 db_field = field['params'].get('initial_kwargs', {}).get('db_field', field['column'])
                 if db_field and db_field != field['name']:
                     params.append('db_column={}'.format(db_field.__repr__()))

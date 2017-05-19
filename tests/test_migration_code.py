@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import
 
 import codecs
 import os
+import random
 import shutil
 import sys
 import tempfile
@@ -28,59 +29,39 @@ class BaseTestCase(unittest.TestCase):
     MODELS_FILE_NAME = 'models'
     dirpath = '/tmp'
 
-    @classmethod
-    def setUpClass(cls):
-        # Создаем временную директорию для тестов
-        cls.dirpath = tempfile.mkdtemp()
-
-        # Создаем директории с проектом и миграциями к нему
-        project_dir = cls._get_project_dir()
-        migrations_dir = os.path.join(cls.dirpath, cls.MIGRATIONS_DIR_NAME)
-
-        if not os.path.exists(project_dir):
-            os.mkdir(project_dir)
-        if not os.path.exists(migrations_dir):
-            os.mkdir(migrations_dir)
-        # Делаем проект модулем
-        ini_file = os.path.join(project_dir, '__init__.py')
-        if not os.path.exists(ini_file):
-            with codecs.open(ini_file, 'w') as f:
-                f.write('')
-        sys.path.insert(0, cls.dirpath)
-
-    @classmethod
-    def _get_project_dir(cls):
-        return os.path.join(cls.dirpath, cls.PROJECT_DIR_NAME)
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.dirpath)
-
     def setUp(self):
+        # Создаем временную директорию для тестов
+        self.dirpath = tempfile.mkdtemp()
+        # делаем случайное название проекта, дабы ре-импорты в разных тестах срабатывали
+        self.current_project_name = '{}_{}'.format(self.PROJECT_DIR_NAME, random.randint(100, 999))
+        self.project_dir = os.path.join(self.dirpath, self.current_project_name)
+        # Создаем директории с проектом и миграциями к нему
+        migrations_dir = os.path.join(self.dirpath, self.MIGRATIONS_DIR_NAME)
+        os.mkdir(self.project_dir)
+        os.mkdir(migrations_dir)
+        # Делаем проект модулем
+        ini_file = os.path.join(self.project_dir, '__init__.py')
+        with codecs.open(ini_file, 'w') as f:
+            f.write('')
+        sys.path.insert(0, self.dirpath)
         # База данных, на которой будут проводиться проверки
-        if hasattr(self, 'db'):
-            self.db.close()
         db_path = os.path.join(self.dirpath, self.TEST_DB_NAME)
         self.db = peewee.SqliteDatabase(db_path)
         self.db.connect()
-        for table in self.db.get_tables():
-            self.db.execute_sql('DROP TABLE {}'.format(table))
-        self.db.commit()
 
-    @property
-    def project_dir(self):
-        return os.path.join(self.dirpath, self.PROJECT_DIR_NAME)
+    def tearDown(self):
+        shutil.rmtree(self.dirpath)
 
-    @classmethod
-    def get_config(cls):
+    def get_config(self):
         cfg = Config()
         cfg.update({
             cfg.BASE_SECTION: {
-                cfg.MIGRATOR_DB_URL: 'sqlite:///{}'.format(os.path.join(cls.dirpath, cls.TEST_DB_NAME)),
+                cfg.MIGRATOR_DB_URL: 'sqlite:///{}'.format(os.path.join(self.dirpath, self.TEST_DB_NAME)),
                 cfg.MIGRATOR_DB_TYPE: 'sqlite',
-                cfg.MIGRATOR_PROJECT_DIR: os.path.join(cls.dirpath, cls.PROJECT_DIR_NAME),
-                cfg.MIGRATOR_MIGRATIONS_DIR: os.path.join(cls.dirpath, cls.MIGRATIONS_DIR_NAME),
-                cfg.MIGRATOR_MODELS_PATH: '{}.{}'.format(cls.PROJECT_DIR_NAME, cls.MODELS_FILE_NAME),
+                # cfg.MIGRATOR_SYS_PATH: os.path.join(self.dirpath, self.PROJECT_DIR_NAME),
+                cfg.MIGRATOR_SYS_PATH: self.project_dir,
+                cfg.MIGRATOR_MIGRATIONS_DIR: os.path.join(self.dirpath, self.MIGRATIONS_DIR_NAME),
+                cfg.MIGRATOR_MODELS_PATH: '{}.{}'.format(self.current_project_name, self.MODELS_FILE_NAME),
                 cfg.MIGRATOR_EXCLUDED_MODELS: ''
             }
         })
