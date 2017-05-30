@@ -81,7 +81,8 @@ class Inspector(object):
         _module = inspect.getmodule(value)
         if _module is not None:
             # Обычные функции
-            return {'value': '{}.{}'.format(_module, value.__name__), 'import': _module}
+            module_name = _module.__name__
+            return {'value': '{}.{}'.format(module_name, value.__name__), 'import': module_name}
         # TODO: Надо научиться как-то отлавливать такие builtins, как datetime.datetime.now, у которых module None
         return None
 
