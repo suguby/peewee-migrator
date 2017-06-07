@@ -11,7 +11,7 @@ with codecs.open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='peewee-migrator',
-    version='0.1.2',
+    version='0.1.3',
     description='Basic migrations support for peewee ORM',
     author='Suguby',
     author_email='suguby@gmail.com',

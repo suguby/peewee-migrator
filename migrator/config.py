@@ -11,7 +11,6 @@ __all__ = ['Config']
 class Config(dict):
     BASE_SECTION = 'migrator'
     MIGRATOR_DB_URL = 'db_url'
-    MIGRATOR_DB_TYPE = 'db_type'
     MIGRATOR_SYS_PATH = 'sys_path'
     MIGRATOR_MIGRATIONS_DIR = 'migrations_dir'
 
@@ -28,7 +27,6 @@ class Config(dict):
         self.update({
             self.BASE_SECTION: {
                 self.MIGRATOR_DB_URL: 'sqlite:///sqlite.db',
-                self.MIGRATOR_DB_TYPE: 'sqlite',
                 self.MIGRATOR_SYS_PATH: 'project',
                 self.MIGRATOR_MIGRATIONS_DIR: 'migrations',
                 self.MIGRATOR_MODELS_PATH: 'app.models',
@@ -70,6 +68,12 @@ class Config(dict):
         if url is None:
             return None
         return connect(url)
+
+    @property
+    def db_type(self):
+        db_url = self.get(self.BASE_SECTION, {}).get(self.MIGRATOR_DB_URL)
+        if db_url:
+            return db_url.split(':')[0]
 
     def get_setting(self, key, default=None):
         return self.get(self.BASE_SECTION, {}).get(key, default)

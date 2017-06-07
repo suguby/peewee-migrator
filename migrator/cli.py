@@ -143,7 +143,6 @@ def create_config(
     cfg.update({
         cfg.BASE_SECTION: {
             cfg.MIGRATOR_DB_URL: db_url,
-            cfg.MIGRATOR_DB_TYPE: db_type,
             cfg.MIGRATOR_SYS_PATH: sys_path,
             cfg.MIGRATOR_MIGRATIONS_DIR: migrations_dir,
             cfg.MIGRATOR_MODELS_PATH: models_path,

@@ -48,9 +48,7 @@ class Executor(object):
             self.migrations_in_path = True
 
     def get_migrator(self):
-        migrator = self.MIGRATORS.get(
-            self.config.get_setting(self.config.MIGRATOR_DB_TYPE), lambda x: None
-        )(self.get_db_obj())
+        migrator = self.MIGRATORS.get(self.config.db_type, lambda x: None)(self.get_db_obj())
         if migrator is None:
             raise Exception
         return migrator

@@ -34,7 +34,6 @@ class TestCliBase(unittest.TestCase):
         cfg.update({
             cfg.BASE_SECTION: {
                 cfg.MIGRATOR_DB_URL: '',
-                cfg.MIGRATOR_DB_TYPE: self.DB_TYPE,
                 cfg.MIGRATOR_SYS_PATH: project_dir,
                 cfg.MIGRATOR_MIGRATIONS_DIR: self.migrations_dir,
                 cfg.MIGRATOR_MODELS_PATH: self.MODELS_FILE_NAME,

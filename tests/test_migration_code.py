@@ -57,7 +57,6 @@ class BaseTestCase(unittest.TestCase):
         cfg.update({
             cfg.BASE_SECTION: {
                 cfg.MIGRATOR_DB_URL: 'sqlite:///{}'.format(os.path.join(self.dirpath, self.TEST_DB_NAME)),
-                cfg.MIGRATOR_DB_TYPE: 'sqlite',
                 # cfg.MIGRATOR_SYS_PATH: os.path.join(self.dirpath, self.PROJECT_DIR_NAME),
                 cfg.MIGRATOR_SYS_PATH: self.project_dir,
                 cfg.MIGRATOR_MIGRATIONS_DIR: os.path.join(self.dirpath, self.MIGRATIONS_DIR_NAME),
