@@ -3,6 +3,7 @@ import codecs
 
 import six
 from playhouse.db_url import connect
+from playhouse.migrate import SqliteMigrator, MySQLMigrator, PostgresqlMigrator
 from six.moves import configparser
 
 __all__ = ['Config']
@@ -17,6 +18,12 @@ class Config(dict):
     # Список через запятую
     MIGRATOR_MODELS_PATH = 'models_path'
     MIGRATOR_EXCLUDED_MODELS = 'excluded_models'
+
+    MIGRATORS = {
+        'sqlite': SqliteMigrator,
+        'mysql': MySQLMigrator,
+        'postgres': PostgresqlMigrator
+    }
 
     def __init__(self, *args, **kwargs):
         self.cp = configparser.ConfigParser()
@@ -68,6 +75,12 @@ class Config(dict):
         if url is None:
             return None
         return connect(url)
+
+    def get_migrator(self):
+        migrator = self.MIGRATORS.get(self.db_type, lambda x: None)(self.get_db())
+        if migrator is None:
+            raise Exception('No migrator for db type {}'.format(self.db_type))
+        return migrator
 
     @property
     def db_type(self):

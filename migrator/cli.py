@@ -12,6 +12,8 @@ from migrator.config import Config
 from migrator.executor import Executor
 
 # Установка локализации
+from migrator.fixtures import FixtureLoader
+
 translation = gettext.translation('migrator_cli', './locale', fallback=True)
 if sys.version_info > (3,):
     _ = translation.gettext
@@ -162,11 +164,13 @@ def create_config(
 
 
 @cli.command('make')
-@click.option('--from', 'migration_type', default='db', type=click.Choice(['db', 'last', 'rev', 'empty']))
+@click.option('--type', 'migration_type', default='from_db',
+              type=click.Choice(['from_db', 'from_last', 'from_rev', 'empty', 'data']))
 @click.option('--rev', default=None)
 @click.option('--name', default=None)
+@click.option('--models', default=None)
 @click.pass_context
-def make_migration(ctx, migration_type, rev, name):
+def make_migration(ctx, migration_type, rev, name, models):
     migrator = Executor(ctx.obj['cfg'])
     if rev is None and migration_type == 'rev':
         halt(_(u'--rev param required'))
@@ -174,23 +178,25 @@ def make_migration(ctx, migration_type, rev, name):
 
     if migration_type == 'empty':
         migrator.make_empty_migration(migration_name=migration_name)
-    if migration_type == 'db':
+    elif migration_type == 'from_db':
         migrator.migrate_from_db(migration_name=migration_name)
-        return
-    if migration_type == 'last':
+    elif migration_type == 'from_last':
         last = sorted(migrator.get_migrations(), key=lambda x: -x['time'])
         if not last:
             halt(_(u'There are no latest migration.'))
         migrator.migrate_from_migration(last[0], migration_name=migration_name)
-        return
-    if migration_type == 'rev':
+    elif migration_type == 'from_rev':
         revisions = migrator.get_migrations_by_hash(rev)
         if not revisions:
             click.echo(_(u'Revision {} not found.').format(rev))
         if len(revisions) > 1:
             halt(_(u'Revision {} has too much matches ({}).').format(rev, len(revisions)))
         migrator.migrate_from_migration(revisions[0], migration_name=migration_name)
-        return
+    elif migration_type == 'data':
+        loader = FixtureLoader(ctx.obj['cfg'])
+        loader.make_data_migration(migration_name=migration_name, only_models=models)
+    else:
+        print('Unknown migration type {}'.format(migration_type))
 
 
 @cli.command('apply')
@@ -209,6 +215,21 @@ def apply_migration(ctx, force, fake, rev):
         halt(_(u'Migration dependencies not applied: {}').format(u','.join(not_applied)))
     migrator.apply(revision, fake=fake)
     click.echo(_(u'Migration {} applied successfully!').format(revision['hash']))
+
+
+@cli.command('revert')
+@click.option('--force', default=False, is_flag=True)
+@click.option('--fake', default=False, is_flag=True)
+@click.argument('rev')
+@click.pass_context
+def revert_migration(ctx, force, fake, rev):
+    migrator = Executor(ctx.obj['cfg'])
+    revision = get_one_revision(migrator, rev)
+    if migrator.check_status(revision['hash']) != migrator.STATUS_APPLIED:
+        if not force and not click.confirm(_(u'Migration not applied. Revert?'), default=False):
+            halt(_(u'Abort'))
+    migrator.revert(revision, fake=fake)
+    click.echo(_(u'Migration {} reverted successfully!').format(revision['hash']))
 
 
 @cli.command('list')

@@ -4,17 +4,14 @@ from __future__ import unicode_literals
 
 import codecs
 import hashlib
+import json
 import os
 import sys
 import time
 
-import json
-from playhouse.migrate import SqliteMigrator, MySQLMigrator, PostgresqlMigrator
-
 from migrator.code_generator import CodeGenerator
-from migrator.db_inspector import Inspector
 from migrator.collector import ChangesCollector
-
+from migrator.db_inspector import Inspector
 
 __all__ = ['Executor']
 
@@ -26,11 +23,6 @@ def extend_path(path, index=0):
 
 
 class Executor(object):
-    MIGRATORS = {
-        'sqlite': SqliteMigrator,
-        'mysql': MySQLMigrator,
-        'postgres': PostgresqlMigrator
-    }
     CodeGenerator = CodeGenerator
     STATUS_APPLIED = 'applied'
     STATUS_AVAILABLE = 'available'
@@ -46,12 +38,6 @@ class Executor(object):
         if not self.migrations_in_path:
             extend_path(self.config.get_setting(self.config.MIGRATOR_MIGRATIONS_DIR), 0)
             self.migrations_in_path = True
-
-    def get_migrator(self):
-        migrator = self.MIGRATORS.get(self.config.db_type, lambda x: None)(self.get_db_obj())
-        if migrator is None:
-            raise Exception
-        return migrator
 
     def import_migration(self, migration):
         return __import__(migration['import'])
@@ -88,9 +74,15 @@ class Executor(object):
 
     def apply(self, migration, fake=False):
         if not fake:
-            module = self.import_migration(migration)
-            module.up(self.get_db_obj(), self.get_migrator())
+            _module = self.import_migration(migration)
+            _module.up(config=self.config)
         self.make_applied(migration['hash'])
+
+    def revert(self, migration, fake=False):
+        if not fake:
+            _module = self.import_migration(migration)
+            _module.down(self.config)
+        self.unmake_applied(migration['hash'])
 
     def get_applied(self):
         migrations_dir = self.config.get_setting(self.config.MIGRATOR_MIGRATIONS_DIR)
@@ -118,17 +110,28 @@ class Executor(object):
             except ValueError:
                 pass
         required.insert(position, revision)
-        migrations_dir = self.config.get_setting(self.config.MIGRATOR_MIGRATIONS_DIR)
-        with codecs.open(os.path.join(migrations_dir, self.REQUIRED_FILE), 'w', 'utf-8') as f:
-            f.write(json.dumps(required))
+        self.save_required_fs(required)
 
     def make_applied(self, revision):
         applied = set(self.get_applied())
         applied.add(revision)
+        self.save_applied_fs(applied)
+
+    def unmake_applied(self, revision):
+        applied = set(self.get_applied())
+        applied.remove(revision)
+        self.save_applied_fs(applied)
+
+    def save_applied_fs(self, applied):
         # TODO: Добавить бэкенд сохранения в БД
         migrations_dir = self.config.get_setting(self.config.MIGRATOR_MIGRATIONS_DIR)
         with codecs.open(os.path.join(migrations_dir, '.applied.json'), 'w', 'utf-8') as f:
             f.write(json.dumps(list(applied)))
+
+    def save_required_fs(self, required):
+        migrations_dir = self.config.get_setting(self.config.MIGRATOR_MIGRATIONS_DIR)
+        with codecs.open(os.path.join(migrations_dir, self.REQUIRED_FILE), 'w', 'utf-8') as f:
+            f.write(json.dumps(required))
 
     def check_status(self, revision):
         applied = self.get_applied()
@@ -286,3 +289,4 @@ class Executor(object):
             f.write(migration_code)
 
         return migration_path
+

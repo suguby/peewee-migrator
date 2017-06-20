@@ -30,13 +30,15 @@ class BaseModel(peewee.Model):
 {models}{proxy_fields_init}
 
 
-def up(db, migrator):
-    proxy_db.initialize(db)
+def up(config):
+    proxy_db.initialize(config.get_db())
+    migrator = config.get_migrator()
 {up}
 
 
-def down(db, migrator):
-    proxy_db.initialize(db)
+def down(config):
+    proxy_db.initialize(config.get_db())
+    migrator = config.get_migrator()
 {down}
 '''
 

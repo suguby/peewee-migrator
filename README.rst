@@ -20,7 +20,6 @@ An example of the your_app.cfg::
     db_url = postgres://peewee:123@127.0.0.1:5432/peewee
     migrations_dir = /path/to/your/project/migrations
     sys_path = /path/to/your/project:/path/to/external/library
-    db_type = postgres
     models_path = app.models
     excluded_models =
 
@@ -59,4 +58,4 @@ Mark migration as required after another migration
   migrator -c your_app.cfg require migration_hash --after another_hash
 
 Apply all required migrations at once
-  migrator -c your_app.cfg up
+  migrator -c your_app.cfg up_required
