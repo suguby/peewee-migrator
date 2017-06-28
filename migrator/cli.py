@@ -184,14 +184,14 @@ def make_migration(ctx, migration_type, rev, name, models):
         last = sorted(migrator.get_migrations(), key=lambda x: -x['time'])
         if not last:
             halt(_(u'There are no latest migration.'))
-        migrator.migrate_from_migration(last[0], migration_name=migration_name)
+        migrator.migrate_from_migration(migration=last[0], migration_name=migration_name)
     elif migration_type == 'from_rev':
         revisions = migrator.get_migrations_by_hash(rev)
         if not revisions:
             click.echo(_(u'Revision {} not found.').format(rev))
         if len(revisions) > 1:
             halt(_(u'Revision {} has too much matches ({}).').format(rev, len(revisions)))
-        migrator.migrate_from_migration(revisions[0], migration_name=migration_name)
+        migrator.migrate_from_migration(migration=revisions[0], migration_name=migration_name)
     elif migration_type == 'data':
         loader = FixtureLoader(ctx.obj['cfg'])
         loader.make_data_migration(migration_name=migration_name, only_models=models)

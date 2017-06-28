@@ -159,59 +159,63 @@ class Executor(object):
                 f.write('')
 
     def make_empty_migration(self, migration_name=None):
-        # TODO: сделать генерацию по готовому шаблону, без self.migratemigr
-        i = Inspector(models_path=self.config.get_models_paths(), excluded_models=self.config.get_excluded())
-        current_models = list(i.inspect_models())
-        c = CodeGenerator(current_models)
-        imports, models, proxies = c.clses_code()
-        old_data = c.clses_json()
-        new = {x['name']: x for x in old_data}
-
-        return self.migrate(imports, models, proxies, new, new, old_data, migration_name=migration_name)
-
-    def migrate_from_migration(self, migration=None, migration_name=None):
-        # Получение информации о предыдущем состоянии из моделй
-        i = Inspector(models_path=[migration['import']], excluded_models=self.config.get_excluded())
-        old_models = list(i.inspect_models())
-        c = CodeGenerator(old_models)
-        old_json = c.clses_json()
-        old = {x['name']: x for x in old_json}
-        old_data = old_json
-
-        # Получение информации о текущем состоянии из моделей
+        # TODO: сделать генерацию по готовому шаблону, без self.migrate
         i = Inspector(models_path=self.config.get_models_paths(), excluded_models=self.config.get_excluded())
         current_models = list(i.inspect_models())
         c = CodeGenerator(current_models)
         imports, models, proxies = c.clses_code()
         new = {x['name']: x for x in c.clses_json()}
+        return self.migrate(imports, models, proxies, new, new, migration_name=migration_name)
 
+    def migrate_from_migration(self, migration=None, migration_name=None):
+        excluded_models = self.config.get_excluded()
+        # Получение информации о предыдущем состоянии из моделй
+        i = Inspector(models_path=[migration['import']], excluded_models=excluded_models)
+        old_models = list(i.inspect_models())
+        old = {x['name']: x for x in CodeGenerator(old_models).clses_json()}
+        # Получение информации о текущем состоянии из моделей
+        i = Inspector(models_path=self.config.get_models_paths(), excluded_models=excluded_models)
+        current_models = list(i.inspect_models())
+        new = {x['name']: x for x in CodeGenerator(current_models).clses_json()}
+        # генерация кода старых и новых моделей
+        c = CodeGenerator(current_models + old_models)
+        imports, models, proxies = c.clses_code()
         return self.migrate(
-            imports, models, proxies, new, old, old_data, migration_name=migration_name, dependencies=[migration]
+            imports, models, proxies, new, old, migration_name=migration_name, dependencies=[migration]
         )
 
     def migrate_from_db(self, migration_name=None):
+        excluded_models = self.config.get_excluded()
+        i = Inspector(models_path=self.config.get_models_paths(), excluded_models=excluded_models)
         # Получение информации о текущем состоянии из моделей
-        i = Inspector(models_path=self.config.get_models_paths(), excluded_models=self.config.get_excluded())
         current_models = list(i.inspect_models())
+        new = {x['name']: x for x in CodeGenerator(current_models).clses_json()}
+        # Получение информации о состоянии из базы данных
+        db_models = list(i.inspect_database(self.get_db_obj()))
+        old = {x['name']: x for x in CodeGenerator(db_models).clses_json()}
+        # генерация кода старых и новых моделей
+        current_models_tables = [m[1] for m in current_models]
+        for db_model in db_models:
+            if db_model[1] not in current_models_tables:
+                current_models.append(db_model)
         c = CodeGenerator(current_models)
         imports, models, proxies = c.clses_code()
-        new = {x['name']: x for x in c.clses_json()}
+        return self.migrate(imports, models, proxies, new, old, migration_name=migration_name)
 
-        # Получение информации о состоянии из базы данных
-        i = Inspector(excluded_models=self.config.get_excluded())
-        db_models = list(i.inspect_database(self.get_db_obj()))
-        c = CodeGenerator(db_models)
-        old_json = c.clses_json()
-        old = {x['name']: x for x in old_json}
-        old_data = old_json
+    def migrate(self, imports, models, proxies, new, old, migration_name=None, dependencies=None):
+        up_migration = self._get_migration_changes(new=new, old=old)
+        up = self.CodeGenerator.changes_code(up_migration, indent=4)
+        down_migration = self._get_migration_changes(new=old, old=new)
+        down = self.CodeGenerator.changes_code(down_migration, indent=4)
+        return self.make_migration(
+            imports, models, up=up, down=down, migration_name=migration_name, proxies=proxies,
+            dependencies=dependencies
+        )
 
-        return self.migrate(imports, models, proxies, new, old, old_data, migration_name=migration_name)
-
-    def migrate(self, imports, models, proxies, new, old, old_data, migration_name=None, dependencies=None):
+    def _get_migration_changes(self, new, old):
         collector = ChangesCollector()
         # Построение таблицы соответствий
         model_matches = collector.get_table_matches(new, old)
-
         # Операции миграции
         migration = {
             # Базовые операции: создание и удаление таблиц
@@ -227,7 +231,6 @@ class Executor(object):
                 'null': []
             }
         }
-
         for new_model_name, old_model_name in model_matches.items():
             new_model = new[new_model_name]
             old_model = old[old_model_name]
@@ -252,23 +255,18 @@ class Executor(object):
                 new_field = new_fields[new_field_name]
                 old_field = old_fields[old_field_name]
                 # Обработка индексов
-                migration['fields']['index'].extend(collector.get_field_indexes(new_field, old_field, new_model, old_model))
+                migration['fields']['index'].extend(
+                    collector.get_field_indexes(new_field, old_field, new_model, old_model))
                 # Обработка null
                 migration['fields']['null'].extend(collector.get_field_null(new_field, old_field, new_model, old_model))
                 # Обработка переименований полей
-                migration['fields']['rename'].extend(collector.get_field_rename(new_field, old_field, new_model, old_model))
+                migration['fields']['rename'].extend(
+                    collector.get_field_rename(new_field, old_field, new_model, old_model))
 
-        # Генерация кода
-        up, down = self.CodeGenerator.changes_code(migration, indent=4)
-
-        # Конечное создание миграции
-        return self.make_migration(
-            imports, models, old_data, up=up, down=down, migration_name=migration_name, proxies=proxies,
-            dependencies=dependencies
-        )
+        return migration
 
     def make_migration(
-        self, imports, models, old_data, up=None, down=None, migration_name=None, proxies=None, dependencies=None
+        self, imports, models, up=None, down=None, migration_name=None, proxies=None, dependencies=None
     ):
 
         self.check_migrations_package()

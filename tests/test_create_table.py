@@ -14,11 +14,16 @@ class CreateTableTest(TestCliBase):
         process = self._popen_cli('make', '--name', 'test_empty')
         process.communicate()
         rev = self._get_migration_revision()
+        from tests.apps.create_table.models import CreateTestDbTable
+        CreateTestDbTable._meta.database = self.db
+
         process = self._popen_cli('apply', rev)
         process.communicate()
-        from tests.apps.create_table.models import TestDbTable
-        TestDbTable._meta.database = self.db
-        self.assertEqual(TestDbTable.table_exists(), True)
+        self.assertEqual(CreateTestDbTable.table_exists(), True)
+
+        process = self._popen_cli('revert', rev)
+        process.communicate()
+        self.assertEqual(CreateTestDbTable.table_exists(), False)
 
 
 class CreateTablePostrgesTest(PostrgesTestMixin, CreateTableTest):

@@ -63,7 +63,7 @@ class FixtureLoader(object):
         imports, models, proxies = c.clses_code()
 
         return self.executor.make_migration(
-            imports, models, old_data='', up=up, down=None, migration_name=migration_name, proxies=proxies
+            imports, models, up=up, down=None, migration_name=migration_name, proxies=proxies
         )
 
     def load_data(self, migration_hash, models):

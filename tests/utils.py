@@ -58,10 +58,13 @@ class TestCliBase(unittest.TestCase):
         return db_url
 
     def _clear_db(self):
-        for table in self.db.get_tables():
-            self.db.execute_sql('DROP TABLE {}'.format(table))
+        with self.db.atomic():
+            for table in self.db.get_tables():
+                self.db.execute_sql('DROP TABLE {}'.format(table))
 
     def tearDown(self):
+        if self.database_config_exists:
+            self._clear_db()
         shutil.rmtree(self.dirpath)
 
     def _get_migration_revision(self):

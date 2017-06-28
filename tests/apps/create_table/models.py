@@ -2,7 +2,7 @@
 import peewee
 
 
-class TestDbTable(peewee.Model):
+class CreateTestDbTable(peewee.Model):
     float_field = peewee.FloatField()
     int_field = peewee.IntegerField()
     char_field = peewee.CharField(max_length=64)

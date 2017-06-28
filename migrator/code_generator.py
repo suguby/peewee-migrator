@@ -166,7 +166,6 @@ def down(config):
     @classmethod
     def changes_code(cls, migration, indent=0):
         builder = cls.Builder(indent=indent)
-        up, down = [], ['pass']
 
         # Создание таблиц
         if migration['create']:
@@ -177,14 +176,8 @@ def down(config):
         # Удаление таблиц
         if migration['drop']:
             builder.write_line('').write_line('# Tables deletion')
-            for num, db_table in enumerate(migration['drop'], 1):
-                if num > 1:
-                    builder.write_line('')
-                builder.write_line('class ToDrop{num}(BaseModel):'.format(num=num)).tab()
-                builder.write_line('class Meta:').tab()
-                builder.write_line('db_table = {table}'.format(table=db_table.__repr__())).un_tab().un_tab()
-                builder.write_line('')
-                builder.write_line('ToDrop{num}.drop_table()'.format(num=num))
+            for db_table in migration['drop']:
+                builder.write_line('{db_table}.drop_table()'.format(db_table=db_table))
 
         # Переименование таблиц
         pass
@@ -241,13 +234,12 @@ def down(config):
                 )
             builder.un_tab().write_line(')')
 
-        up = [builder.code]
-
-        return up, down
+        result_code = [builder.code]
+        return result_code
 
     @classmethod
     def migration_code(
-            cls, imports, models, old_data, up=None, down=None, migration_name=None,
+            cls, imports, models, up=None, down=None, migration_name=None,
             proxies=None, dependencies=None, migration_time=None, migration_hash=None
     ):
         if migration_name is None:
@@ -274,7 +266,7 @@ def down(config):
 
         return cls.MIGRATION_TEMPLATE.format(
             up=up, down=down, imports='\n'.join(imports), models='\n\n\n'.join(models),
-            old_data=json.dumps(old_data, indent=4), migration_name=migration_name.__repr__(),
+            migration_name=migration_name.__repr__(),
             migration_time=migration_time, proxy_fields=proxy_fields, proxy_fields_init=proxy_fields_init,
             migration_dependencies=migration_dependencies
         )
